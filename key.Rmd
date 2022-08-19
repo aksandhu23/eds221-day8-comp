@@ -105,10 +105,10 @@ ggplot(data = lizards,
        aes(x = total_length,
            y = weight)) + 
   geom_point(aes(color = common_name,
-                 shape = ,
                  alpha = 0.6,
                  size = 3)) +
-  facet_wrap(~common_name, scales = "free") + theme_light() + 
+  facet_wrap(~common_name, scales = "free") + 
+  theme_light() + 
   labs(x = "Total Length (mm)",
        y = "Weight (grams)", 
        title = "Lizard sizes", 
@@ -250,5 +250,60 @@ ggplot() +
   theme_minimal() +
   scale_fill_paletteer_d(palette = "ggthemes::manyeys")
   
+```
+
+Day 10
+
+```{r}
+# Make a heat map
+# Date gets rewritten
+# Drop rows with missing values
+
+lizard_counts <- lizards |>
+  mutate(date = lubridate::mdy(date)) |>
+  count(year = lubridate::year(date), common_name) |>
+  drop_na()
+```
+
+```{r}
+ggplot(data = lizard_counts, aes(x = year, y = common_name)) +
+  geom_tile(aes(fill = n), show.legend = FALSE) +
+  geom_text(aes(label = n), color = "white", size = 3) +
+  scale_fill_gradientn(colors = c("navy", "red", "orange")) + theme_minimal()
+```
+
+### Beeswarm plot
+
+```{r}
+whiptails <- lizards |>
+  filter(common_name == "western whiptail") |>
+  drop_na(total_length, weigt)
+
+unique(whiptails$common_name)
+```
+
+```{r}
+whiptail_bee <- ggplot(data = whiptails, aes(x = sex, y = weight)) + geom_beeswarm(size = 1) +
+         geom_boxplot(fill = NA)
+```
+
+# Marginal plot
+
+- Starting from whiptails, plot total length (x-axis) versus weight (y-axis), with point color dependent on sex. 
+
+```{r}
+whiptail_plot <- ggplot(data = whiptails, aes(x = total_length, y = weight)) + 
+  geom_point(aes(color = sex)) +
+  theme(legend.position = "bottom")
+
+ggMarginal(whiptail_plot, type = "boxplot", groupColour = TRUE)
+
+```
+
+### Patchwork
+making compound images easier
+
+```{r}
+((whiptail_bee + whiptail_plot) / whiptail_bee) & theme_dark()
 ```
 
